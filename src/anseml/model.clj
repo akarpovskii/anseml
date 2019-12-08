@@ -51,7 +51,7 @@
         attrs (if has-attrs? attrs {})]
     (if-not (keyword? name)
       (throw (IllegalArgumentException. "The document must contain the only root element.")))
-    (hash-map
+    (array-map
       ::tag name
       ::attrs attrs
       ::value (process-element-value value))))
