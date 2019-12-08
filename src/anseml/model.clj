@@ -42,7 +42,7 @@
   (let [desc (if (keyword? desc) (list desc) desc)
         [name attrs & value] desc
         has-attrs? (and (map? attrs) (valid-attrs? attrs))
-        value (if has-attrs? value (cons attrs value))
+        value (if has-attrs? value (conj value attrs))
         value (cond (empty? value) ()
                     (single-element? value) (if (nil? (first value))
                                               ()
