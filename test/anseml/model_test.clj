@@ -4,9 +4,22 @@
 
 (deftest create-element-test
   (testing "Creation of a root element"
-    (let [elem (create-element (:root
-                                 {:attr "attr-value"}
-                                 "body"))]
+    (let [elem (create-element `(:root
+                                  {:attr "attr-value"}
+                                  "body"))]
+      (is (element? elem))
+      (is (= (get-tag elem) :root))
+      (is (= 1 (count (get-attrs elem))))
+      (is (= (get-attrs elem :attr) "attr-value"))
+      (is (= (get-value elem) (list "body")))))
+
+  (testing "Get data from functions"
+    (let [create-tag :root
+          create-attrs (fn [_] {:attr "attr-value"})
+          create-value (fn [] (fn [] "body"))
+          elem (create-element `(~create-tag
+                                  ~(create-attrs "attr-value")
+                                  ~((create-value))))]
       (is (element? elem))
       (is (= (get-tag elem) :root))
       (is (= 1 (count (get-attrs elem))))
@@ -14,9 +27,9 @@
       (is (= (get-value elem) (list "body")))))
 
   (testing "Nested elements"
-    (let [elem (create-element (:root
-                                 {:attr "attr-value"}
-                                 :inner))]
+    (let [elem (create-element `(:root
+                                  {:attr "attr-value"}
+                                  :inner))]
       (is (element? elem))
       (is (= (get-tag elem) :root))
       (is (= 1 (count (get-attrs elem))))
@@ -29,9 +42,11 @@
         (is (empty? (get-value inner))))))
 
   (testing "List of values"
-    (let [elem (create-element (:root
-                                 {:attr "attr-value"}
-                                 123 (:inner) "value"))]
+    (let [elem (create-element `(:root
+                                  {:attr "attr-value"}
+                                  123
+                                  (:inner)
+                                  "value"))]
       (is (element? elem))
       (is (= (get-tag elem) :root))
       (is (= 1 (count (get-attrs elem))))
@@ -46,20 +61,20 @@
         (is (= "value" val2)))))
 
   (testing "Invalid arguments"
-    (is (thrown? IllegalArgumentException (create-element ())))
-    (is (thrown? IllegalArgumentException (create-element (123))))
-    (is (thrown? IllegalArgumentException (create-element (:tag ["unsupported value"]))))
-    (is (thrown? IllegalArgumentException (create-element (:tag {"unsupported" "key"}))))
-    (is (thrown? IllegalArgumentException (create-element (:tag {:unsupported :value}))))))
+    (is (thrown? IllegalArgumentException (create-element (list))))
+    (is (thrown? IllegalArgumentException (create-element `(123))))
+    (is (thrown? IllegalArgumentException (create-element `(:tag ["unsupported value"]))))
+    (is (thrown? IllegalArgumentException (create-element `(:tag {"unsupported" "key"}))))
+    (is (thrown? IllegalArgumentException (create-element `(:tag {:unsupported :value}))))))
 
 
 (deftest setters-test
-  (let [elem (create-element (:root
-                               {:attr "attr-val"}
-                               "value1"
-                               2
-                               (:inner
-                                 "inner-value")))]
+  (let [elem (create-element `(:root
+                                {:attr "attr-val"}
+                                "value1"
+                                2
+                                (:inner
+                                  "inner-value")))]
 
     (testing "Set tag"
       (let [attrs-before (get-attrs elem)

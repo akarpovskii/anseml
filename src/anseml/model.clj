@@ -10,7 +10,7 @@
   Does not do a deep introspection: checks only main parts."
   [desc]
   (or (keyword? desc)
-      (and (list? desc)
+      (and (seq? desc)
            (keyword? (first desc)))))
 
 (defn- supported-primitive?
@@ -20,15 +20,15 @@
   (let [supported-primitives (list string? integer? float?)]
     ((apply some-fn supported-primitives) value)))
 
-(declare create-element-helper)
+(declare create-element)
 
 (defn- process-element-value
   "Recursively builds the value of an element."
   [value]
-  {:pre [(list? value)]}
+  {:pre [(seq? value)]}
   (apply list
          (map (fn [v]
-                (cond (element-desc? v) (create-element-helper v)
+                (cond (element-desc? v) (create-element v)
                       (supported-primitive? v) v
                       :else (throw (IllegalArgumentException. (str "Unsupported primitive \"" v "\".")))))
               value)))
@@ -38,7 +38,7 @@
             (and (keyword? k) (supported-primitive? v)))
           (if (map? attrs) attrs (apply array-map attrs))))
 
-(defn- create-element-helper [desc]
+(defn create-element [desc]
   (let [desc (if (keyword? desc) (list desc) desc)
         [name attrs & value] desc
         has-attrs? (and (map? attrs) (valid-attrs? attrs))
@@ -58,9 +58,6 @@
 
 
 ; public functions
-
-(defmacro create-element [desc]
-  `(#'create-element-helper (quote ~desc)))
 
 (defn element? [elem]
   (and (map? elem)
