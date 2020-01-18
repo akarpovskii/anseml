@@ -72,7 +72,7 @@
 (defn set-tag [elem tag]
   {:pre [(element? elem)
          (keyword? tag)]}
-  (assoc elem ::tag tag))
+  (with-meta (assoc elem ::tag tag) elem))
 
 (defn get-attrs
   ([elem]
@@ -93,33 +93,32 @@
           (map? attrs)]}
    (if-not (valid-attrs? attrs)
      (throw (IllegalArgumentException. "Attributes contains unsupported types.")))
-   (assoc elem ::attrs attrs))
+   (with-meta (assoc elem ::attrs attrs) (meta elem)))
   ([elem key val & kvs]
    {:pre [(element? elem)]}
    (if-not (and (valid-attrs? (list key val))
                 (valid-attrs? kvs))
      (throw (IllegalArgumentException. "Attributes contains unsupported types.")))
-   (assoc elem ::attrs (apply hash-map key val kvs))))
+   (with-meta (assoc elem ::attrs (apply hash-map key val kvs)) (meta elem))))
 
 (defn add-attrs
   ([elem attrs]
    {:pre [(element? elem)
           (map? attrs)]}
-   (set-attrs elem (merge (get-attrs elem) attrs)))
+   (with-meta (set-attrs elem (merge (get-attrs elem) attrs)) (meta elem)))
   ([elem key val & kvs]
    {:pre [(element? elem)]}
-   (set-attrs elem
-              (apply assoc (get-attrs elem) key val kvs))))
+   (with-meta (set-attrs elem (apply assoc (get-attrs elem) key val kvs)) (meta elem))))
 
 (defn remove-attrs
   ([elem attr]
    {:pre [(element? elem)
           (keyword? attr)]}
-   (set-attrs elem (dissoc (get-attrs elem) attr)))
+   (with-meta (set-attrs elem (dissoc (get-attrs elem) attr)) (meta elem)))
   ([elem attr & attrs]
    {:pre [(element? elem)
           (apply every? keyword? attr attrs)]}
-   (set-attrs elem (apply dissoc (get-attrs elem) attr attrs))))
+   (with-meta (set-attrs elem (apply dissoc (get-attrs elem) attr attrs)) (meta elem))))
 
 (defn get-value [elem]
   {:pre [(element? elem)]}
@@ -134,6 +133,6 @@
                   :else false))]
     (if-not (check-value value)
       (throw (IllegalArgumentException. "Value contains unsupported types."))))
-  (assoc elem ::value (if (list? value)
-                        value
-                        (list value))))
+  (with-meta (assoc elem ::value (if (list? value)
+                                   value
+                                   (list value))) (meta elem)))

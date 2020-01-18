@@ -27,9 +27,10 @@
 
 ; See https://clojure.org/reference/reader#_symbols and https://clojure.org/reference/reader#_literals
 (defn- tkn-keyword [input]
-  (if-let [m (re-find #"^:[\w\*\+\!\-\'\?\<\>\=\/\:]+" input)]
+  (if-let [m (re-find #"^:[\w\+\!\-\'\?\<\>\=\:]+" input)]
     [:keyword m]))
 
+; TODO: Try clojure.edn/read-string instead of regex?
 (defn tokenize [input]
   (if (seq input)
     (if-let [[type val] (or (tkn-parenthesis input)
