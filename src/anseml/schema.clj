@@ -166,89 +166,52 @@
        (and pred
             (pred [root])))))
 
-(let [schema (build-schema (create-element
-                             '(:scm-schema
-                                (:scm-attribute {:tag "width"}
-                                  :scm-string)
-                                (:scm-attribute {:tag "height"}
-                                  :scm-integer)
-                                (:scm-element {:tag "root"}
-                                  :scm-string
-                                  (:scm-attribute
-                                    :width
-                                    :height)))))]
-  (println (validate schema (create-element
-                              '(:root {:width  "1"
-                                       :height 2}
-                                 "bla-bla")))))
-
-(let [width (build-def-attribute (create-element
-                                  '(:scm-attribute {:tag "width"}
-                                     :scm-string))
-                                primitives)
-      height (build-def-attribute (create-element
-                                    '(:scm-attribute {:tag "height"}
-                                       :scm-integer))
-                                  primitives)
-      pred (build-attribute (create-element '(:scm-attribute
-                                               :width
-                                               :height))
-                            {:width width :height height})]
-  (println (pred [(create-element '(:root {:width "1"
-                                           :height 2}))])))
-
-(let [pred (build-sequence (create-element '(:scm-sequence
-                                              (:scm-alternative
-                                                (:scm-sequence
-                                                  (:scm-integer)
-                                                  (:scm-float))
-                                                (:scm-string))
-                                              (:scm-sequence
-                                                (:scm-float)
-                                                (:scm-integer))))
-                           {:scm-integer scm-integer?
-                            :scm-float   scm-float?
-                            :scm-string  scm-string?})]
-  (println (pred ["bla-bla" 2.1 5])))
-
-
-;(defn- build-all [predicates desc]
-;  {:pre [(= :scm-all (get-tag desc))]}
-;  (if (or (empty? (get-value desc)) (not (next (get-value desc))))
-;    (error "Sequence must contain at least two predicates."))
-;  (let [list-of-preds (map
-;                        (fn [v]
-;                          (if-not (element? v)
-;                            (error "Unsupported value meet in description " desc "."))
-;                          (let [tag (get-tag v)
-;                                p (tag predicates)]
-;                            (case tag
-;                              :scm-alternative (build-alternative predicates v)
-;                              :scm-all (build-all predicates v)
-;                              :scm-sequence (build-sequence predicates v)
-;                              (or p (error "Undefined predicate meet in description " desc ".")))))
-;                        (get-value desc))
-;        preds-count (count list-of-preds)]
-;    (fn [val]
-;      (and (seqable? val)
-;           (= (count val) preds-count)
-;           (let [counts (reduce
-;                          (fn [acc v]
-;                            (let [test (map #(% v) list-of-preds)]
-;                              (map #(if %1 (inc %2) %2) test acc)))
-;                          (repeat preds-count 0)
-;                          val)]
-;             (every? #(= 1 %) counts))))))
+;(let [schema (build-schema (create-element
+;                             '(:scm-schema
+;                                (:scm-attribute {:tag "width"}
+;                                  :scm-string)
+;                                (:scm-attribute {:tag "height"}
+;                                  :scm-integer)
+;                                (:scm-element {:tag "root"}
+;                                  :scm-string
+;                                  (:scm-attribute
+;                                    :width
+;                                    :height)))))]
+;  (println (validate schema (create-element
+;                              '(:root {:width  "1"
+;                                       :height 2}
+;                                 "bla-bla")))))
 ;
+;(let [width (build-def-attribute (create-element
+;                                  '(:scm-attribute {:tag "width"}
+;                                     :scm-string))
+;                                primitives)
+;      height (build-def-attribute (create-element
+;                                    '(:scm-attribute {:tag "height"}
+;                                       :scm-integer))
+;                                  primitives)
+;      pred (build-attribute (create-element '(:scm-attribute
+;                                               :width
+;                                               :height))
+;                            {:width width :height height})]
+;  (println (pred [(create-element '(:root {:width "1"
+;                                           :height 2}))])))
 ;
-;;(println (let [pred (build-all
-;;                      primitives
-;;                      (create-element '(:scm-all
-;;                                         :scm-integer
-;;                                         :scm-float
-;;                                         :scm-string)))]
-;;           (pred [1.1 "1" 2])))
-;
+;(let [pred (build-sequence (create-element '(:scm-sequence
+;                                              (:scm-alternative
+;                                                (:scm-sequence
+;                                                  (:scm-integer)
+;                                                  (:scm-float))
+;                                                (:scm-string))
+;                                              (:scm-sequence
+;                                                (:scm-float)
+;                                                (:scm-integer))))
+;                           {:scm-integer scm-integer?
+;                            :scm-float   scm-float?
+;                            :scm-string  scm-string?})]
+;  (println (pred ["bla-bla" 2.1 5])))
+
+
 ;(def schema-example
 ;  (create-element
 ;    '(:scm-schema
