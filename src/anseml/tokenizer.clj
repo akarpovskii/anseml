@@ -10,7 +10,7 @@
           (vector (str (first input)))))
 
 (defn- tkn-whitespace [input]
-  (if-let [m (re-find #"^[ \t\n]+" input)]
+  (if-let [m (re-find #"^[ \t\n,]+" input)]
     [:whitespace m]))
 
 (defn- tkn-integer [input]
