@@ -1,26 +1,44 @@
-(ns anseml.schema
-  (:require [anseml.model :refer :all]
-            [anseml.common :refer :all]))
+(ns anseml.common.schema
+  (:require [anseml.dom.model :refer :all]))
 
 ; scm-schema
 ; scm-string, scm-float, scm-integer
 ; scm-element, scm-attribute
-; scm-alternative, scm-sequence, scm-all, scm-attribute
+; scm-alternative, scm-sequence, scm-attribute
 
-(defn- scm-string? [[x & xs]]
-  ;(println "string " x " | " xs)
-  (if (string? x)
-    (list xs)))
+(def ^:dynamic scm-string?
+  (fn [[x & xs]]
+    (if (string? x)
+      (list xs))))
 
-(defn- scm-integer? [[x & xs]]
-  ;(println "integer " x " | " xs)
-  (if (integer? x)
-    (list xs)))
+(def ^:dynamic scm-integer? (fn [[x & xs]]
+                              (if (integer? x)
+                                (list xs))))
 
-(defn- scm-float? [[x & xs]]
-  ;(println "float " x " | " xs)
-  (if (float? x)
-    (list xs)))
+(def ^:dynamic scm-float? (fn [[x & xs]]
+                            (if (float? x)
+                              (list xs))))
+
+(def ^:dynamic scm-check-attr (fn [attr predicate]
+                                (fn [[x & xs]]
+                                  (if (and (element? x)
+                                           (get-attrs x attr)
+                                           (predicate (list (get-attrs x attr))))
+                                    (list xs)))))
+
+(def ^:dynamic scm-check-element (fn [tag attrs-pred value-pred]
+                                   (fn [[x & xs]]
+                                     (if (and (element? x)
+                                              (= tag (get-tag x))
+                                              (or (not attrs-pred)
+                                                  (attrs-pred (list x)))
+                                              (or (not value-pred)
+                                                  (value-pred (get-value x))))
+                                       (list xs)))))
+
+(def ^:dynamic scm-get-tag
+  (fn [root]
+    (get-tag root)))
 
 (def ^:private primitives
   {:scm-string  scm-string?
@@ -61,8 +79,7 @@
                 (let [res (mapcat p values)]
                   (seq res)))
               (list value)
-              ps)
-      )))
+              ps))))
 
 (defn- build-attribute [schema predicates]
   {:pre [(= :scm-attribute (get-tag schema))]}
@@ -91,11 +108,7 @@
                                                 (error "Unsupported value meet in the attribute definition " schema "."))
                (primitive? value-tag) (value-tag primitives)
                :else (error "Unsupported value meet in the attribute definition " schema "."))]
-    (fn [[x & xs]]
-      (if (and (element? x)
-               (get-attrs x attr)
-               (pred (list (get-attrs x attr))))
-        (list xs)))))
+    (scm-check-attr attr pred)))
 
 (defn- build-def-element [schema attributes elements]
   {:pre [(= :scm-element (get-tag schema))]}
@@ -123,22 +136,16 @@
                    (cond
                      (= :scm-alternative value-tag) (build-alternative value elements)
                      (= :scm-sequence value-tag) (build-sequence value elements)
-                     (primitive? value-tag) (value-tag primitives)
-                     :else (or (value-tag elements) (error "Undefined predicate meet in description " schema "."))))
-        value (and value (comp value get-value))]           ;NB! value accepts a single element
-    (fn [[x & xs]]
-      (if (and (element? x)
-               (= tag (get-tag x))
-               (or (not attrs)
-                   (attrs (list x)))
-               (or (not value)
-                   (value x)))
-        (list xs)))))
+                     ;(primitive? value-tag) (value-tag primitives)
+                     :else (or (value-tag elements) (error "Undefined predicate meet in description " schema "."))))]
+    (scm-check-element tag attrs value)))
 
 (defn build-schema [schema]
   {:pre [(= :scm-schema (get-tag schema))]}
   (let [attributes (atom {})
-        elements (atom {})]
+        elements (atom {:scm-string scm-string?
+                        :scm-integer scm-integer?
+                        :scm-float scm-float?})]
     (doseq [def (get-value schema)]
       (let [tag (get-tag def)
             type (keyword (get-attrs def :tag))]
@@ -158,34 +165,18 @@
   (::schema schema))
 
 (defn validate [schema root]
-  {:pre [(schema? schema)
-         (element? root)]}
-  (let [tag (get-tag root)
-        pred (tag (:elements schema))]
+  {:pre [(schema? schema)]}
+  (let [tag (scm-get-tag root)
+        pred (tag (:elements schema))
+        root (if (element? root) [root] root)]
     (= '(nil)
-       (and pred
-            (pred [root])))))
+       (and pred (pred root)))))
 
-;(let [schema (build-schema (create-element
-;                             '(:scm-schema
-;                                (:scm-attribute {:tag "width"}
-;                                  :scm-string)
-;                                (:scm-attribute {:tag "height"}
-;                                  :scm-integer)
-;                                (:scm-element {:tag "root"}
-;                                  :scm-string
-;                                  (:scm-attribute
-;                                    :width
-;                                    :height)))))]
-;  (println (validate schema (create-element
-;                              '(:root {:width  "1"
-;                                       :height 2}
-;                                 "bla-bla")))))
-;
+
 ;(let [width (build-def-attribute (create-element
-;                                  '(:scm-attribute {:tag "width"}
-;                                     :scm-string))
-;                                primitives)
+;                                   '(:scm-attribute {:tag "width"}
+;                                      :scm-string))
+;                                 primitives)
 ;      height (build-def-attribute (create-element
 ;                                    '(:scm-attribute {:tag "height"}
 ;                                       :scm-integer))
@@ -210,43 +201,3 @@
 ;                            :scm-float   scm-float?
 ;                            :scm-string  scm-string?})]
 ;  (println (pred ["bla-bla" 2.1 5])))
-
-
-;(def schema-example
-;  (create-element
-;    '(:scm-schema
-;       (:scm-element {:tag "name"}
-;         :scm-string)
-;
-;       (:scm-element {:tag "number"}
-;         (:scm-alternative
-;           :scm-float
-;           :scm-integer))
-;
-;       (:scm-attribute {:tag "time"}
-;         :scm-string)
-;
-;       (:scm-attribute {:tag "id"}
-;         :scm-integer)
-;
-;       (:scm-element {:tag "dict"}
-;         (:scm-sequence
-;           :name
-;           :number)
-;         (:scm-attribute
-;           :id
-;           :time)))))
-;
-;(def elem (create-element '(:dict {:id   42,
-;                                   :time "time"}
-;                             (:name "name")
-;                             (:number 42.0))))
-;
-;(def ex-name (create-element '(:name "name")))
-;
-;(def ex-number (create-element '(:number 42.0)))
-;
-;(let [scm ((build-schema schema-example) 0)]
-;  (println ((:dict scm) elem)))
-;
-;

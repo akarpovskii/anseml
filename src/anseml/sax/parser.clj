@@ -1,5 +1,5 @@
-(ns anseml.sax-parser
-  (:require [anseml.tokenizer :refer :all])
+(ns anseml.sax.parser
+  (:require [anseml.sax.tokenizer :refer :all])
   (:import (java.io BufferedReader)))
 
 (defn parse-lazy-seq
@@ -86,7 +86,6 @@
   *element-primitive* (fn [value]))
 
 ; TODO: proper error messages
-; TODO: some validation based on a model
 (defn parse [rdr]
   {:pre [(instance? BufferedReader rdr)]}
   (doseq [event (parse-lazy-seq rdr)]

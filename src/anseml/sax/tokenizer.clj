@@ -1,4 +1,4 @@
-(ns anseml.tokenizer)
+(ns anseml.sax.tokenizer)
 
 (defn- tkn-parenthesis [input]
   (some-> (case (first input)

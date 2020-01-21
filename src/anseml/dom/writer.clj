@@ -1,5 +1,5 @@
-(ns anseml.writer
-  (:require [anseml.model :refer :all]))
+(ns anseml.dom.writer
+  (:require [anseml.dom.model :refer :all]))
 
 (def ^:dynamic
   ^{:doc "Bind to true if you want write to use tabs instead of spaces"}

@@ -1,7 +1,7 @@
 (ns anseml.writer-test
   (:require [clojure.test :refer :all]
-            [anseml.writer :refer :all]
-            [anseml.model :refer :all]))
+            [anseml.dom.writer :refer :all]
+            [anseml.dom.model :refer :all]))
 
 (deftest writer-test
   (letfn [(replace-newlines [str]

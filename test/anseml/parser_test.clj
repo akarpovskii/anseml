@@ -1,8 +1,8 @@
 (ns anseml.parser-test
   (:require [clojure.test :refer :all]
-            [anseml.dom-parser :refer :all]
-            [anseml.writer :refer :all]
-            [anseml.model :refer :all])
+            [anseml.dom.parser :refer :all]
+            [anseml.dom.writer :refer :all]
+            [anseml.dom.model :refer :all])
   (:import (java.io StringReader BufferedReader)))
 
 (deftest parser-test

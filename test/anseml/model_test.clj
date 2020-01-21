@@ -1,6 +1,6 @@
 (ns anseml.model-test
   (:require [clojure.test :refer :all]
-            [anseml.model :refer :all]))
+            [anseml.dom.model :refer :all]))
 
 (deftest create-element-test
   (testing "Creation of a root element"

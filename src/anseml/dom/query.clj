@@ -1,11 +1,17 @@
-(ns anseml.query
-  (:require [anseml.model :refer :all]
-            [anseml.common :refer :all]
+(ns anseml.dom.query
+  (:require [anseml.dom.model :refer :all]
             [clojure.zip :as z]
             [clojure.string :as s]
             [clojure.edn :as edn]))
 
 (declare ^:dynamic *pred-elem*)
+
+(defn- element-zipper [elem]
+  (z/zipper
+    element?
+    (fn [x] (seq (filter element? (get-value x))))
+    (fn [node children] (set-value node (reverse (into '() children))))
+    elem))
 
 (defn- read-preds [string]
   ;(println string)

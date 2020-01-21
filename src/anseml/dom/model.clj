@@ -1,4 +1,4 @@
-(ns anseml.model)
+(ns anseml.dom.model)
 
 (defn- single-element?
   "Checks whether the collection contains a single element."

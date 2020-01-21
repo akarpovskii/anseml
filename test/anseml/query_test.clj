@@ -1,7 +1,7 @@
 (ns anseml.query-test
   (:require [clojure.test :refer :all]
-            [anseml.model :refer :all]
-            [anseml.query :refer :all]))
+            [anseml.dom.model :refer :all]
+            [anseml.dom.query :refer :all]))
 
 (def ^:private doc-sample
   (create-element
