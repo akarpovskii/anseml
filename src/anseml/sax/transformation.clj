@@ -1,5 +1,6 @@
 (ns anseml.sax.transformation
-  (:require [anseml.sax.parser :as sax]))
+  (:require [anseml.sax.parser :as sax])
+  (:import (java.io BufferedReader)))
 
 (def ^:dynamic
   ^{:doc "Bind to true if you want write to use tabs instead of spaces"}

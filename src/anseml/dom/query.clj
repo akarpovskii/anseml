@@ -6,6 +6,13 @@
 
 (declare ^:dynamic *pred-elem*)
 
+(defn- supported-primitive?
+  "Checks whether the value type is supported.
+  Currently supported types: string, integer, float."
+  [value]
+  (let [supported-primitives (list string? integer? float?)]
+    ((apply some-fn supported-primitives) value)))
+
 (defn- element-zipper [elem]
   (z/zipper
     element?
@@ -151,19 +158,61 @@
         path (z/next (z/seq-zip path))]
     (iter path elem)))
 
-(def root (create-element `(:root
-                             {:attr1 "attr1-val"
-                              :attr2 "attr2-val"}
-                             "value"
-                             (:inner1
-                               {:tag "tag1"}
-                               (:root "inner-root1"))
-                             (:inner1
-                               {:tag "tag2"
-                                :width 1}
-                               (:root "inner-root2"))
-                             (:inner2)
-                             "after-inner")))
+(defn update-doc
+  "The `loc` must be a zipper obtained by a previous call to `query`.
+  `action` is one of the following keywords:
+  :insert-child      -- xs must be an inserted child
+  :insert-after      -- xs must be an inserted child
+  :insert-before     -- xs must be an inserted child
+  :update-value      -- xs must be a function :: value -> value
+  :update-attributes -- xs must be a function :: attrs -> attrs"
+  [loc action & xs]
+  {:pre [(keyword? action)]}
+  (let [arg (first xs)]
+    (case action
+      :insert-child (if (or (supported-primitive? arg)
+                            (element? arg))
+                      (z/insert-child loc arg)
+                      (throw (IllegalArgumentException. (str "Unsupported value type " arg "."))))
+      :insert-after (if (or (supported-primitive? arg)
+                            (element? arg))
+                      (z/insert-right loc arg)
+                      (throw (IllegalArgumentException. (str "Unsupported value type " arg "."))))
+      :insert-before (if (or (supported-primitive? arg)
+                             (element? arg))
+                       (z/insert-left loc arg)
+                       (throw (IllegalArgumentException. (str "Unsupported value type " arg "."))))
+      :update-value (z/edit loc #(set-value % (arg (get-value %))))
+      :update-attributes (z/edit loc #(set-attrs % (arg (get-attrs %)))))))
+
+(defn apply-update
+  "The `loc` must be a zipper obtained by a previous call to `query`."
+  [loc]
+  (z/root loc))
+
+;(def root (create-element `(:root
+;                             {:attr1 "attr1-val"
+;                              :attr2 "attr2-val"}
+;                             "value"
+;                             (:inner1
+;                               {:tag "tag1"}
+;                               (:root "inner-root1"))
+;                             (:inner1
+;                               {:tag "tag2"
+;                                :width 1}
+;                               (:root "inner-root2"))
+;                             (:inner2)
+;                             "after-inner")))
+;
+;(doall (map println (-> root
+;                        (query "./:inner1 @(= :width 1)/")
+;                        first
+;                        (update-doc :insert-child "inserted-child")
+;                        (update-doc :insert-before "inserted-before")
+;                        (update-doc :insert-after "inserted-after")
+;                        (update-doc :update-value (fn [x] '()))
+;                        (update-doc :update-attributes (fn [x] {}))
+;                        z/root)))
 
 ;(doall (map println (-> root
 ;                        (query "./:inner1 @(= :width 1)/")
