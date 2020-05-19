@@ -1,0 +1,32 @@
+(:html
+  (:head
+    (:title
+      "Your title here"))
+  (:body
+    {:bgcolor "FFFFFF"}
+    (:center
+      (:img
+        {:src "brokenImg.png"
+         :align "bottom"}))
+    (:hr
+      (:a
+        {:href "http://somegreatsite.com"}
+        "Link Name")
+      "is a link to another nifty site"
+      (:h1
+        "This is a Header")
+      (:h2
+        "This is a Medium Header")
+      "Send me mail at "
+      (:a
+        {:href "mailto:support@yourcompany.com"}
+        "support@yourcompany.com")
+      (:p
+        "This is a new paragraph!")
+      (:p
+        (:b
+          "This is a new paragraph!"))
+      (:br)
+      (:b
+        (:i
+          "This is a new sentence without a paragraph break, in bold italics")))))

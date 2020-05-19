@@ -82,7 +82,7 @@
 (println (anseml.dom.schema/validate
            (anseml.dom.schema/build-schema schema)
            (anseml.dom.model/create-element
-             '(:root {:width  "1"
+             '(:root {:width  1
                       :height 2}
                 "bla-bla"
                 (:inner
